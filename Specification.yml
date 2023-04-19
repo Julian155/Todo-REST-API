@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: Todo REST-Specification
+  version: 1.0.0
+  contact: 
+    name: Julian Sommer
+    email: j.sommer@basecom.de
+servers:
+  - url: http://127.0.0.1:5001
+
+tags:
+  - name: Todo-list
+    description: todo-list Endpoints
+  - name: Entry
+    description: entry Endpoints  
+  
+paths:
+  /todo-list:
+    get:
+      tags: 
+        - Todo-list
+      summary: Get all todo lists
+      description: Returns all todo lists with entries as json object
+      responses:
+        '200':
+          description: Collection of todo lists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoListCollection" 
+    post:
+      tags: 
+        - Todo-list
+      summary: Create todo list
+      description: Creates new todo list and returns list as json object
+      requestBody:
+        description: Request body of a todo list
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoListRequestBody"
+      responses:
+        '200':
+          description: Todo list got created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoList" 
+        '500':
+          description: Error during database transaction
+
+  /todo-list/{listId}:
+    get:
+      tags: 
+        - Todo-list
+      summary: Get entries from todo list
+      description: Returns entries of todoList with a given id as json object
+      parameters:
+        - name: listId
+          in: path
+          description: Id of a todo list
+          required: True
+          schema:
+            type: string
+            format: uuid
+          example: '46ac4098-de7f-11ed-b5ea-0242ac120002'
+      responses:
+        '200':
+          description: Entries of todo list as json object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoEntryCollection"
+        '404':
+          description: No todo list with given id was found
+      
+    patch:
+      tags: 
+        - Todo-list
+      summary: Update todo list
+      description: Updates specific todo list with values of the request body
+      parameters:
+        - name: listId
+          in: path
+          description: Id of a todo list
+          required: True
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Request body of a todo list
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoListRequestBody"
+      responses:
+        '200':
+          description: Todo list was updated successfully
+        '404':
+          description: No todo list with given id was found
+        '500':
+          description: Error during database transaction
+          
+    delete:
+      tags: 
+        - Todo-list
+      summary: Delete todo list
+      description: Deletes specific todo list with all of it's entries
+      parameters:
+        - name: listId
+          in: path
+          description: Id of a todo list
+          required: True
+          schema:
+            type: string
+            format: uuid
+          example: '46ac4098-de7f-11ed-b5ea-0242ac120002'
+      responses:
+        '200':
+          description: Todo list and entries were deleted successfully
+        '404':
+          description: No todo list with given id was found
+        '500':
+          description: Error during database transaction
+          
+  /todo-list/{listId}/entry:
+    post:
+      tags: 
+        - Entry
+      summary: Add entry to list
+      description: Adds entry to specific todo list and return entry as json object
+      parameters:
+        - name: listId
+          in: path
+          description: Id of a todo list
+          required: True
+          schema:
+            type: string
+            format: uuid
+          example: '46ac4098-de7f-11ed-b5ea-0242ac120002'
+      requestBody:
+        description: Request body of an entry
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoEntryRequestBody"
+      responses:
+        '200':
+          description: Entry was added to todo list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoEntry"
+        '404':
+          description: No todo list with given id was found
+      
+  /entry/{entryId}:
+    patch:
+      tags: 
+        - Entry
+      summary: Update todo entry
+      description: Updates specific todo entry with values of the request body
+      parameters:
+        - name: entryId
+          in: path
+          description: Id of an todo entry
+          required: True
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Request body of an entry
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoEntryRequestBody"
+      responses:
+        '200':
+          description: Entry was updated successfully
+        '404':
+          description: No todo entry with given id was found
+        '500':
+          description: Error during database transaction
+          
+    delete:
+      tags: 
+        - Entry
+      summary: Delete todo entry
+      description: Deletes specific todo entry
+      parameters:
+        - name: entryId
+          in: path
+          description: Id of a todo entry
+          required: True
+          schema:
+            type: string
+            format: uuid
+          example: '46ac4098-de7f-11ed-b5ea-0242ac120002'
+      responses:
+        '200':
+          description: Todo entry was deleted successfully
+        '404':
+          description: No todo entry with given id was found
+        '500':
+          description: Error during database transaction
+          
+components:
+    schemas: 
+      TodoListCollection:
+        type: object
+        properties:
+          lists:
+            type: array
+            items:
+              $ref: "#/components/schemas/TodoList" 
+
+      TodoList:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            example: '46ac4098-de7f-11ed-b5ea-0242ac120002'
+          name:
+            type: string
+            example: 'Cleaning plan'
+          entries: 
+            type: array
+            items:
+              $ref: "#/components/schemas/TodoEntry" 
+        
+      TodoEntryCollection:
+        type: object
+        properties:
+          entries:
+            type: array
+            items:
+              $ref: "#/components/schemas/TodoEntry"
+              
+      TodoEntry:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            example: '46ac4098-de7f-11ed-b5ea-0242ac120002'
+          name:
+            type: string
+            example: 'Window'
+          description: 
+            type: string
+            example: 'Clean windows in the living room'
+            
+      TodoListRequestBody:
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'Cleaning plan'
+
+      TodoEntryRequestBody:
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'Window'
+          description: 
+            type: string
+            example: 'Clean windows in the living room'
