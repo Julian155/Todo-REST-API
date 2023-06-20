@@ -1,32 +1,20 @@
 from Modules.Todo.Repository.Mapper.TodoMapper import TodoMapper
-from Modules.Todo.Repository.TodoListRepository import TodoListRepository
-from Modules.Todo.Repository.TodoListEntityManager import TodoListEntityManager
-from Modules.Todo.Repository.TodoEntryRepository import TodoEntryRepository
-from Modules.Todo.Repository.TodoEntryEntityManager import TodoEntryEntityManager
+from Modules.Todo.Repository.TodoEntitiyManager import TodoEntityManager
+from Modules.Todo.Repository.TodoRepository import TodoRepository
 
 class TodoFactory():
-    def createTodoEntryEntityManager(self) -> TodoEntryEntityManager:
-        
-        return TodoEntryEntityManager(
+    def createTodoRepository(self) -> TodoRepository:
+        return TodoRepository(
             self.createTodoMapper()
         )
 
-    def createTodoEntryRepository(self) -> TodoEntryRepository:
+    def createTodoEntitiyManager(self) -> TodoEntityManager:
 
-        return TodoEntryRepository()
-
-    def createTodoListEntityManager(self) -> TodoListEntityManager:
-        
-        return TodoListEntityManager(
-            self.createTodoMapper()
-        )
-
-    def createTodoListRepository(self) -> TodoListRepository:
-
-        return TodoListRepository(
+        return TodoEntityManager(
             self.createTodoMapper()
         )
 
     def createTodoMapper(self) -> TodoMapper:
 
         return TodoMapper()
+

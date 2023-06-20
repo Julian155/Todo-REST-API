@@ -8,10 +8,7 @@ class AbstractEntity(ABC):
     TABLE_MAP = AbstractTableMap()
     
     id = ''
-
-    new = True
-    deleted = False
-
+    
     def getId(self) -> str:
         """
         :return str
@@ -27,72 +24,51 @@ class AbstractEntity(ABC):
         """
 
         self.id = id
-        
-    def isNew(self) -> bool:
-        """
-        :return bool
-        """
-
-        return self.new
-
-    def isDeleted(self) -> bool:
-        """
-        :return bool
-        """
-
-        return self.deleted
-
-    def setNew(self, isNew: bool) -> None:
-        self.new = isNew
-
-    def setDeleted(self, isDeleted: bool) -> None:
-        self.deleted = isDeleted
 
     def doSave(self)-> None:
-        tableName = self.TABLE_MAP.TABLE_NAME
-    
-        session[tableName][self.id] = self.toDict()
-        self.saveRelations()
+        entityData = self.toDict()
+        session[self.TABLE_MAP.TABLE_NAME][self.TABLE_MAP.COL_ENTITY][self.id] = entityData
+           
+        self.saveSearchData(entityData)
 
     def doDelete(self, childEntities: list[Self]|None = None)-> None:
-        tableName = self.TABLE_MAP.TABLE_NAME
 
-        session[tableName].pop(self.id)
-        self.deleteSelfSearchColumns()
-        self.deleteRelatedEntities(childEntities)
-
-    def saveRelations(self)-> None:
-        tableName = self.TABLE_MAP.TABLE_NAME
-        searchColumnNameAndValue = self.getSelfSearchColumnNameAndValue()
+        session[self.TABLE_MAP.TABLE_NAME][self.TABLE_MAP.COL_ENTITY].pop(self.id)
         
-        if len(searchColumnNameAndValue) > 0:
-            colName: str
-            value: str
-            for colName, value in searchColumnNameAndValue.items():
-                if value not in session[tableName][colName]:
-                    session[tableName][colName][value] = []
+        self.deleteSearchData()
+        self.deleteRelatedEntities(childEntities)
+             
+    def saveSearchData(self, entityData: dict)-> None:
+        colName: str
+        value: str
+        for colName, value in entityData.items():
+            if value and self.doesSearchColumnExistInTable(colName):
+                self.createListIfValueDoesNotExist(colName, value)
                 
-                session[tableName][colName][value].append(self.id)
+                if self.id not in session[self.TABLE_MAP.TABLE_NAME][colName][value]:
+                    session[self.TABLE_MAP.TABLE_NAME][colName][value].append(self.id)
                 
+    def deleteSearchData(self)-> None:
+        for colName, value in self.toDict().items():
+            if value and self.doesSearchColumnExistInTable(colName):
+                session[self.TABLE_MAP.TABLE_NAME][colName][value].remove(self.id)
+            
+                if len(session[self.TABLE_MAP.TABLE_NAME][colName][value]) == 0:
+                    session[self.TABLE_MAP.TABLE_NAME][colName].pop(value)
+
+    def doesSearchColumnExistInTable(self, columnName: str) -> bool:
+        return columnName in session[self.TABLE_MAP.TABLE_NAME]
+            
+    def createListIfValueDoesNotExist(self, columnName: str, value: str) -> None:
+        if value not in session[self.TABLE_MAP.TABLE_NAME][columnName]:
+            session[self.TABLE_MAP.TABLE_NAME][columnName][value] = []
+
     def deleteRelatedEntities(self, childEntities: list[Self]|None = None)-> None:
         if (not childEntities):
             return None
         
         for childEntity in childEntities:
             childEntity.delete()
-
-    def deleteSelfSearchColumns(self)-> None:
-        tableName = self.TABLE_MAP.TABLE_NAME
-        searchColumnNameAndValue = self.getSelfSearchColumnNameAndValue()
-
-        if len(searchColumnNameAndValue) > 0:
-            colName: str
-            value: str
-            for colName, value in searchColumnNameAndValue.items():
-                session[tableName][colName][value].remove(self.id)
-            
-                if len(session[tableName][colName][value]) == 0:
-                    session[tableName][colName].pop(value)
 
     @classmethod
     @abstractmethod 
@@ -102,11 +78,6 @@ class AbstractEntity(ABC):
     @classmethod
     @abstractmethod 
     def delete(self)-> None:
-        ...
-
-    @classmethod
-    @abstractmethod 
-    def getSelfSearchColumnNameAndValue(self)-> dict:
         ...
 
     @classmethod

@@ -1,14 +1,20 @@
 from Modules.Todo.Repository.Mapper.TodoMapper import TodoMapper
 from Modules.Todo.Repository.Persistence.Query.TodoListQuery import TodoListQuery
 from Modules.Todo.Repository.Persistence.TodoListEntity import TodoListEntity
+from Modules.Todo.Repository.TodoQueryContainer import TodoQueryContainer
 from Shared.Todo.Transfer.TodoListCollectionTransfer import TodoListCollectionTransfer
 from Shared.Todo.Transfer.TodoListTransfer import TodoListTransfer
+from Modules.Todo.Repository.Persistence.Query.TodoEntryQuery import TodoEntryQuery
+from Modules.Todo.Repository.Persistence.TodoEntryEntity import TodoEntryEntity
+from Shared.Todo.Transfer.TodoEntryTransfer import TodoEntryTransfer
+from Shared.Todo.Transfer.TodoEntryCollectionTransfer import TodoEntryCollectionTransfer
 
-class TodoListRepository():
+class TodoRepository():
     def __init__(self, todoMapper: TodoMapper):
         self.todoMapper = todoMapper    
 
     def getTodoListTransferById(self, todoListId: str) -> TodoListTransfer|None:
+
         todoListEntity = self.getTodoListById(todoListId)
 
         if todoListEntity:
@@ -17,26 +23,21 @@ class TodoListRepository():
         return None
 
     def getTodoListById(self, todoListId: str) -> TodoListEntity|None:
-        return (TodoListQuery()
-                    .useTodoEntryQuery()
-                    .endUse()
+        return (TodoQueryContainer()
+                    .queryTodoListWithEntries()
                     .findOneByListId(todoListId))
 
     def getTodoListCollectionTransfer(self) -> TodoListCollectionTransfer:
-        todoListEntities = self.getAllTodoLists()
+        todoListEntities = (TodoQueryContainer()
+                                .queryTodoListWithEntries()
+                                .find())
  
         if todoListEntities:
             return self.todoMapper.mapTodoListEntitiesToCollectionTransfer(todoListEntities)
 
         return TodoListCollectionTransfer()
-    
-    def getAllTodoLists(self) -> list[TodoListEntity]|None:
-        return (TodoListQuery()
-                    .useTodoEntryQuery()
-                    .endUse()
-                    .find())
 
-    def createTodoList(self, todoListData: dict)-> TodoListTransfer:
+    def createTodoList(self, todoListData: dict) -> TodoListTransfer:
         todoListTransfer = TodoListTransfer()
         todoListTransfer.fromDict(todoListData)
 
@@ -55,10 +56,29 @@ class TodoListRepository():
 
         return None
 
-    def doesTodoListExist(self, todoListId: str)-> bool:
+    def doesTodoListExist(self, todoListId: str) -> bool:
         todoListEntity = self.getTodoListById(todoListId)
         
         if todoListEntity:
             return True
 
         return False
+
+    def getTodoEntryCollectionTransfer(self, todoListId: str) -> TodoEntryCollectionTransfer:
+        todoEntries = (TodoEntryQuery()
+                        .findByFkTodoList(todoListId))
+
+        if todoEntries:
+            return self.todoMapper.mapTodoEntryEntitiesToCollectionTransfer(todoEntries)
+
+        return TodoEntryCollectionTransfer()
+    
+    def getTodoEntryById(self, todoEntryId: str) -> TodoEntryEntity|None:
+        return (TodoEntryQuery()
+                .findOneByEntryId(todoEntryId))
+
+    def createTodoEntryTransfer(self, todoEntryData: dict)-> TodoEntryTransfer:
+        todoEntryTransfer = TodoEntryTransfer()
+        todoEntryTransfer.fromDict(todoEntryData)
+
+        return todoEntryTransfer

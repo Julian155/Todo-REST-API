@@ -6,46 +6,57 @@ from Modules.Kernel.Controller.AbstractController import AbstractController
 
 class TodoEntryController(AbstractController):
     def addEntryToTodoList(self, todoListId: str)-> Response:
-        todoEntryData = request.form
+        todoEntryData = request.json
 
-        if not TodoFactory().createTodoListRepository().doesTodoListExist(todoListId):
-            return 'true', 404
+        if not TodoFactory().createTodoRepository().doesTodoListExist(todoListId):
+            return self.buildRespond(
+                (RestResponseTransfer()
+                    .setStatusCode(RestHttpCodes.RESOURCE_NOT_FOUND)
+                )
+            )
 
-        todoEntryTransfer = TodoFactory().createTodoEntryRepository().createTodoEntryTransfer(todoEntryData)
+        todoEntryTransfer = TodoFactory().createTodoRepository().createTodoEntryTransfer(todoEntryData)
 
-        todoEntry = TodoFactory().createTodoEntryEntityManager().saveTodoEntry(todoEntryTransfer, todoListId)
+        todoEntry = TodoFactory().createTodoEntitiyManager().saveTodoEntry(todoEntryTransfer, todoListId)
 
         return self.buildRespond(
             (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
                 .addResponseData(todoEntry)
             )
         )
     
     def updateTodoEntry(self, todoEntryId: str)-> Response:
-        todoEntryData = request.form
+        todoEntryData = request.json
 
-        todoEntryEntity = TodoFactory().createTodoEntryRepository().getTodoEntryById(todoEntryId)
-        todoEntryTransfer = TodoFactory().createTodoEntryRepository().createTodoEntryTransfer(todoEntryData)
+        todoEntryEntity = TodoFactory().createTodoRepository().getTodoEntryById(todoEntryId)
         
-        TodoFactory().createTodoEntryEntityManager().updateTodoEntry(todoEntryTransfer, todoEntryEntity)
+        if not todoEntryEntity:
+            return self.buildRespond(
+                (RestResponseTransfer()
+                    .setStatusCode(RestHttpCodes.RESOURCE_NOT_FOUND)
+                )
+            )
+            
+        todoEntryTransfer = TodoFactory().createTodoRepository().createTodoEntryTransfer(todoEntryData)
+        
+        TodoFactory().createTodoEntitiyManager().updateTodoEntry(todoEntryTransfer, todoEntryEntity)
 
         return self.buildRespond(
-            (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
-            )
+            (RestResponseTransfer())
         )
 
     def deleteTodoEntry(self, todoEntryId: str):
-        todoEntryEntity = TodoFactory().createTodoEntryRepository().getTodoEntryById(todoEntryId)
+        todoEntryEntity = TodoFactory().createTodoRepository().getTodoEntryById(todoEntryId)
 
         if not todoEntryEntity:
-            return '', 404
+            return self.buildRespond(
+                (RestResponseTransfer()
+                    .setStatusCode(RestHttpCodes.RESOURCE_NOT_FOUND)
+                )
+            )
         
-        TodoFactory().createTodoEntryEntityManager().deleteTodoEntry(todoEntryEntity)
+        TodoFactory().createTodoEntitiyManager().deleteTodoEntry(todoEntryEntity)
 
         return self.buildRespond(
-            (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
-            )
+            (RestResponseTransfer())
         )

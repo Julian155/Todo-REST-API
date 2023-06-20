@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 class AbstractTransfer(ABC):
     def addToCollection(self, values: list[Self]) -> list:
+        print(list)
         valueList = []
         if not values:
             return valueList

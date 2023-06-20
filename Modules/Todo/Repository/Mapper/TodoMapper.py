@@ -1,4 +1,5 @@
 from Modules.Todo.Repository.Persistence.TodoEntryEntity import TodoEntryEntity
+from Shared.Todo.Transfer.TodoEntryCollectionTransfer import TodoEntryCollectionTransfer
 from Shared.Todo.Transfer.TodoEntryTransfer import TodoEntryTransfer
 from Shared.Todo.Transfer.TodoListCollectionTransfer import TodoListCollectionTransfer
 from Shared.Todo.Transfer.TodoListTransfer import TodoListTransfer
@@ -29,7 +30,8 @@ class TodoMapper():
 
     def mapTodoEntryTransferToEntity(self, todoEntryTransfer: TodoEntryTransfer, todoEntryEntity: TodoEntryEntity|None = None) -> TodoEntryEntity:
         todoEntryEntity = todoEntryEntity if todoEntryEntity else TodoEntryEntity()
-        todoEntryEntity.fromDict(todoEntryTransfer.toDict())
+        todoEntryEntity.setName(todoEntryTransfer.getName())
+        todoEntryEntity.setDescription(todoEntryTransfer.getDescription())
 
         return todoEntryEntity
 
@@ -40,3 +42,11 @@ class TodoMapper():
             todoListCollectionTransfer.addTodoList(self.mapTodoListEntityToTransfer(todoListEntity))
 
         return todoListCollectionTransfer
+    
+    def mapTodoEntryEntitiesToCollectionTransfer(self, todoEntryEntities: list[TodoEntryEntity]) -> TodoEntryCollectionTransfer:
+        todoEntryCollectionTransfer = TodoEntryCollectionTransfer()
+
+        for todoEntryEntity in todoEntryEntities:
+            todoEntryCollectionTransfer.addTodoEntry(self.mapTodoEntryEntityToTransfer(todoEntryEntity))
+
+        return todoEntryCollectionTransfer

@@ -1,5 +1,4 @@
 from typing_extensions import Self
-from uuid import uuid4
 from Shared.Kernel.Transfer.AbstractTransfer import AbstractTransfer
 from Shared.Todo.Transfer.TodoEntryTransfer import TodoEntryTransfer
 
@@ -91,14 +90,6 @@ class TodoListTransfer(AbstractTransfer):
         return {
             self.ID: self.getId(),
             self.NAME: self.getName(),
-            self.ENTRIES: self.convertEntriesToDict()
+            self.ENTRIES: self.addToCollection(self.getEntries())
         }
-
-    def convertEntriesToDict(self)-> dict:
-        """returns Transfer object as dictionary
-
-        :return dict
-        """
-
-        return self.addToCollection(self.getEntries())
     

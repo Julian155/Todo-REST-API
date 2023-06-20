@@ -16,7 +16,7 @@ class AbstractQuery(ABC):
         self.childEntityCollection = {}
 
     def findOneBy(self, column: str, value: int|str|bool) -> AbstractEntity|None:         
-        row = session[self.tableName].get(value, None)
+        row = session[self.tableName][column].get(value, None)
 
         return self.mapRowToEntity(row)
     
@@ -24,26 +24,19 @@ class AbstractQuery(ABC):
         if self.childQueries:
             query: AbstractQuery
             for tableName, query in self.childQueries.items():
-                childEntities = query.findBy(self.tableName, parentId)
+                childEntities = query.findBy(tableName, parentId)
 
                 self.childEntityCollection[tableName] = childEntities
-
-        if self.parentQueries:
-            query: AbstractQuery
-            for tableName, query in self.parentQueries.items():
-                parentEntity = query.findOneBy(self.tableName, parentId)
-
-                self.parentEntityCollection[tableName] = parentEntity
                 
     def findBy(self, column: str, value: int|str|bool) -> list|None:
         collection = []
 
         ids = session[self.tableName][column].get(value, None)
         if not ids: 
-            return []
+            return None
 
         for id in ids:
-            entity = self.findOneBy('', id)
+            entity = self.findOneBy('entity', id)
             collection.append(entity)
 
         return collection
@@ -52,12 +45,13 @@ class AbstractQuery(ABC):
         collection = []
 
         rows: dict
-        rows = session[self.tableName]
+        rows = session[self.tableName]['entity']
         
         if len(rows) == 0:
             return []
 
-        for row in rows.items():
+        for row in rows.values():
+        
             entity = self.mapRowToEntity(row)
             collection.append(entity)
         

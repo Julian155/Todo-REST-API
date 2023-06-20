@@ -93,13 +93,3 @@ class TodoEntryEntity(AbstractEntity):
     def getTableName(self)-> str:
 
         return self.TABLE_MAP.TABLE_NAME
-
-    def getSelfSearchColumnNameAndValue(self)-> dict:
-        return {
-            self.TABLE_MAP.TODO_LIST_TABLE_NAME: self.fkTodoListId
-        }
-
-    def getFkRelations(self)-> dict:
-        return {
-            self.TABLE_MAP.TODO_LIST_TABLE_NAME: self.fkTodoListId
-        }

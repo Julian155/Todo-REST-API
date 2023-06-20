@@ -2,8 +2,8 @@ from typing_extensions import Self
 from Shared.Kernel.Transfer.AbstractTransfer import AbstractTransfer
 from Shared.Todo.Transfer.TodoEntryTransfer import TodoEntryTransfer
 
-class TodoListCollectionTransfer(AbstractTransfer):
-    TODO_Entries = 'entries'
+class TodoEntryCollectionTransfer(AbstractTransfer):
+    TODO_ENTRIES = 'entries'
 
     def __init__(self):
         self.todoEntries = []
@@ -37,7 +37,7 @@ class TodoListCollectionTransfer(AbstractTransfer):
 
         for key, value in todoEntryCollectionData.items():
             match key:
-                case self.TODO_Entries:
+                case self.TODO_ENTRIES:
                     self.todoEntries = value
 
         return self
@@ -47,8 +47,8 @@ class TodoListCollectionTransfer(AbstractTransfer):
 
         :return dict
         """
-
+        
         return {
-            self.todoEntries: self.addToCollection(self.getTodoEntries())
+            self.TODO_ENTRIES: self.addToCollection(self.getTodoEntries())
         }
     

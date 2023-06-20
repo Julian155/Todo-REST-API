@@ -18,19 +18,19 @@
             "id": "681ab54a23204de8b441511e27ba015a",
             "name": "Eintrag1",
             "description": "Besch1",
-            "fk_todo_list_id": "581ab54a23204de8b441511e27ba015a"
+            "fkTodoListId": "581ab54a23204de8b441511e27ba015a"
         },
         {
             "id": "681ab54a23204de8b441511e27ba015b",
             "name": "Eintrag2",
             "description": "Besch2",
-            "fk_todo_list_id": "581ab54a23204de8b441511e27ba015a"
+            "fkTodoListId": "581ab54a23204de8b441511e27ba015a"
         },
         {
             "id": "681ab54a23204de8b441511e27ba015c",
             "name": "Eintrag3",
             "description": "Besch3",
-            "fk_todo_list_id": "581ab54a23204de8b441511e27ba015b"
+            "fkTodoListId": "581ab54a23204de8b441511e27ba015b"
         } 
     ]
     

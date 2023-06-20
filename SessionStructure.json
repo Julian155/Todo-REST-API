@@ -1,7 +1,13 @@
 {
-     "todo_list": {},
+     "todo_list": {
+          "name": {},
+          "entity": {}
+     },
 
      "todo_entry": {
-          "todo_list": {}
+          "name": {},
+          "description": {},
+          "fkTodoListId": {},
+          "entity": {}
      }
 }

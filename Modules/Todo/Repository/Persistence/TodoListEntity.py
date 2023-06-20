@@ -71,9 +71,6 @@ class TodoListEntity(AbstractEntity):
     def queryTodoEntryEntities(self)-> list['TodoEntryEntity']|None:
         return ChildTodoEntryQuery().findByFkTodoList(self.id)
 
-    def getSelfSearchColumnNameAndValue(self)-> dict:
-        return {}
-
     def getTableName(self)-> str:
 
         return self.TABLE_MAP.TABLE_NAME

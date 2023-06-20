@@ -1,68 +1,74 @@
-from flask import render_template, redirect, url_for, request, abort, session, Response
+from flask import Response, request, session
 from Modules.Kernel.Controller.AbstractController import AbstractController
+from Modules.Todo.Repository.TodoRepository import TodoRepository
 from Shared.Rest.RestHttpCodes import RestHttpCodes
 from Shared.Rest.Transfer.RestResponseTransfer import RestResponseTransfer
 from Modules.Todo.TodoFactory import TodoFactory
 
 class TodoListController(AbstractController):
-    def getTodoList(self, todoListId: str):  
-        todoListTransfer = TodoFactory().createTodoListRepository().getTodoListTransferById(todoListId)
+    def getTodoListEntries(self, todoListId: str): 
+        todoRepository = TodoFactory().createTodoRepository()
+        
+        if not todoRepository.doesTodoListExist(todoListId):
+            return self.buildRespond(
+                (RestResponseTransfer()
+                    .setStatusCode(RestHttpCodes.RESOURCE_NOT_FOUND)
+                )
+            )
+              
+        todoEntryCollectionTransfer = todoRepository.getTodoEntryCollectionTransfer(todoListId)
 
         return self.buildRespond(
             (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
-                .addResponseData(todoListTransfer.getEntries())
+                .addResponseData(todoEntryCollectionTransfer.toDict())
             )
         )
         
     def getAllTodoLists(self):
-        todoListCollectionTransfer = TodoFactory().createTodoListRepository().getTodoListCollectionTransfer()
+        todoListCollectionTransfer = TodoFactory().createTodoRepository().getTodoListCollectionTransfer()
 
         return self.buildRespond(
             (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
                 .addResponseData(todoListCollectionTransfer.toDict())
             )
         )
 
     def deleteTodoList(self, todoListId: str)-> Response:
-        todoListEntity = TodoFactory().createTodoListRepository().getTodoListById(todoListId)
+        todoListEntity = TodoFactory().createTodoRepository().getTodoListById(todoListId)
 
         if not todoListEntity:
-            return '', 404
+            return self.buildRespond(
+                (RestResponseTransfer()
+                    .setStatusCode(RestHttpCodes.RESOURCE_NOT_FOUND)
+                )
+            )
         
-        TodoFactory().createTodoListEntityManager().deleteTodoList(todoListEntity)
+        TodoFactory().createTodoEntitiyManager().deleteTodoList(todoListEntity)
 
         return self.buildRespond(
-            (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
-            )
+            (RestResponseTransfer())
         )
     
     def createTodoList(self)-> Response:
-        todoListData = request.form
+        todoListData = request.json
 
-        todoListTransfer = TodoFactory().createTodoListRepository().createTodoList(todoListData)
+        todoListTransfer = TodoFactory().createTodoRepository().createTodoList(todoListData)
 
-        todoList = TodoFactory().createTodoListEntityManager().saveTodoList(todoListTransfer)
+        todoList = TodoFactory().createTodoEntitiyManager().saveTodoList(todoListTransfer)
 
         return self.buildRespond(
             (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
                 .addResponseData(todoList)
             )
         )
 
     def updateTodoList(self, todoListId: str)-> Response:
-        todoListData = request.form
+        todoListData = request.json
 
-        todoListEntity = TodoFactory().createTodoListRepository().getTodoListById(todoListId)
-        todoListTransfer = TodoFactory().createTodoListRepository().createTodoList(todoListData)
+        todoListEntity = TodoFactory().createTodoRepository().getTodoListById(todoListId)
 
-        TodoFactory().createTodoListEntityManager().updateTodoList(todoListTransfer, todoListEntity, todoListId)
+        TodoFactory().createTodoEntitiyManager().updateTodoList(todoListData, todoListEntity)
         
         return self.buildRespond(
-            (RestResponseTransfer()
-                .setStatusCode(RestHttpCodes.SUCCESS)
-            )
+            (RestResponseTransfer())
         )
